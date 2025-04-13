@@ -1,3 +1,4 @@
+
 from typing import Any, Dict, Optional, Tuple, List
 
 import torch
@@ -64,14 +65,14 @@ class HiDreamImageSingleTransformerBlock(nn.Module):
         self.norm3_i = nn.LayerNorm(dim, eps = 1e-06, elementwise_affine = False)
         if num_routed_experts > 0:
             self.ff_i = MOEFeedForwardSwiGLU(
-                dim = dim,
+                dim = dim, 
                 hidden_dim = 4 * dim,
                 num_routed_experts = num_routed_experts,
                 num_activated_experts = num_activated_experts,
             )
         else:
             self.ff_i = FeedForwardSwiGLU(dim = dim, hidden_dim = 4 * dim)
-
+    
     def forward(
         self,
         image_tokens: torch.FloatTensor,
@@ -79,6 +80,7 @@ class HiDreamImageSingleTransformerBlock(nn.Module):
         text_tokens: Optional[torch.FloatTensor] = None,
         adaln_input: Optional[torch.FloatTensor] = None,
         rope: torch.FloatTensor = None,
+
     ) -> torch.FloatTensor:
         wtype = image_tokens.dtype
         shift_msa_i, scale_msa_i, gate_msa_i, shift_mlp_i, scale_mlp_i, gate_mlp_i = \
@@ -135,7 +137,7 @@ class HiDreamImageTransformerBlock(nn.Module):
         self.norm3_i = nn.LayerNorm(dim, eps = 1e-06, elementwise_affine = False)
         if num_routed_experts > 0:
             self.ff_i = MOEFeedForwardSwiGLU(
-                dim = dim,
+                dim = dim, 
                 hidden_dim = 4 * dim,
                 num_routed_experts = num_routed_experts,
                 num_activated_experts = num_activated_experts,
@@ -144,7 +146,7 @@ class HiDreamImageTransformerBlock(nn.Module):
             self.ff_i = FeedForwardSwiGLU(dim = dim, hidden_dim = 4 * dim)
         self.norm3_t = nn.LayerNorm(dim, eps = 1e-06, elementwise_affine = False)
         self.ff_t = FeedForwardSwiGLU(dim = dim, hidden_dim = 4 * dim)
-
+    
     def forward(
         self,
         image_tokens: torch.FloatTensor,
@@ -163,12 +165,14 @@ class HiDreamImageTransformerBlock(nn.Module):
         norm_image_tokens = norm_image_tokens * (1 + scale_msa_i) + shift_msa_i
         norm_text_tokens = self.norm1_t(text_tokens).to(dtype=wtype)
         norm_text_tokens = norm_text_tokens * (1 + scale_msa_t) + shift_msa_t
+
         attn_output_i, attn_output_t = self.attn1(
             norm_image_tokens,
             image_tokens_masks,
             norm_text_tokens,
             rope = rope,
         )
+
         image_tokens = gate_msa_i * attn_output_i + image_tokens
         text_tokens = gate_msa_t * attn_output_t + text_tokens
         
@@ -177,6 +181,7 @@ class HiDreamImageTransformerBlock(nn.Module):
         norm_image_tokens = norm_image_tokens * (1 + scale_mlp_i) + shift_mlp_i
         norm_text_tokens = self.norm3_t(text_tokens).to(dtype=wtype)
         norm_text_tokens = norm_text_tokens * (1 + scale_mlp_t) + shift_mlp_t
+
         ff_output_i = gate_mlp_i * self.ff_i(norm_image_tokens)
         ff_output_t = gate_mlp_t * self.ff_t(norm_text_tokens)
         image_tokens = ff_output_i + image_tokens
