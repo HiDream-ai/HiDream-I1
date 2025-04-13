@@ -485,7 +485,7 @@ class HiDreamImageTransformer2DModel(
 
         for bid, block in enumerate(self.single_stream_blocks):
             cur_llama31_encoder_hidden_states = encoder_hidden_states[block_id]
-						target_device_single = hidden_states.device
+            target_device_single = hidden_states.device
             llama_on_target_single = cur_llama31_encoder_hidden_states.to(target_device_single)
             hidden_states_input = torch.cat([hidden_states, llama_on_target_single], dim=1) # Multi GPU FIX 3
             hidden_states = torch.cat([hidden_states, cur_llama31_encoder_hidden_states], dim=1)
