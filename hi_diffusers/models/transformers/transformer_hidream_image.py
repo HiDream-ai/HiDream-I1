@@ -436,7 +436,7 @@ class HiDreamImageTransformer2DModel(
         initial_encoder_hidden_states = torch.cat([encoder_hidden_states[-1], encoder_hidden_states[-2]], dim=1)
         initial_encoder_hidden_states_seq_len = initial_encoder_hidden_states.shape[1]
         for bid, block in enumerate(self.double_stream_blocks):
-            cur_llama31_encoder_hidden_states = projected_encoder_hidden_states[block_id]
+            cur_llama31_encoder_hidden_states = encoder_hidden_states[block_id]
             target_device = hidden_states.device
             initial_on_target = initial_encoder_hidden_states.to(target_device)
             llama_on_target = cur_llama31_encoder_hidden_states.to(target_device)
@@ -487,8 +487,7 @@ class HiDreamImageTransformer2DModel(
             cur_llama31_encoder_hidden_states = encoder_hidden_states[block_id]
             target_device_single = hidden_states.device
             llama_on_target_single = cur_llama31_encoder_hidden_states.to(target_device_single)
-            hidden_states_input = torch.cat([hidden_states, llama_on_target_single], dim=1) # Multi GPU FIX 3
-            hidden_states = torch.cat([hidden_states, cur_llama31_encoder_hidden_states], dim=1)
+            hidden_states = torch.cat([hidden_states, llama_on_target_single], dim=1) # Multi GPU FIX 3
             if self.training and self.gradient_checkpointing:
                 def create_custom_forward(module, return_dict=None):
                     def custom_forward(*inputs):
