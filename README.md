@@ -18,7 +18,7 @@
 
 We offer both the full version and distilled models. For more information about the models, please refer to the link under Usage.
 
-| Name            | Script                                             | Inference Steps | HuggingFace repo       |
+| Name            | Script                                             | Inference Steps | Hugging Face repo       |
 | --------------- | -------------------------------------------------- | --------------- | ---------------------- |
 | HiDream-I1-Full | [inference.py](./inference.py)                     | 50              | 🤗 [HiDream-I1-Full](https://huggingface.co/HiDream-ai/HiDream-I1-Full)  |
 | HiDream-I1-Dev  | [inference.py](./inference.py)                     | 28              | 🤗 [HiDream-I1-Dev](https://huggingface.co/HiDream-ai/HiDream-I1-Dev) |
