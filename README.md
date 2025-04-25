@@ -86,7 +86,7 @@ pipe = HiDreamImagePipeline.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 
-pipe = pipe.to('cuda')
+pipe = pipe.to('cuda', dtype=torch.bfloat16)
 
 image = pipe(
     'A cat holding a sign that says "HiDream.ai".',
