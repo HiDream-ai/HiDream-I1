@@ -1,3 +1,4 @@
+
 from typing import Any, Dict, Optional, Tuple, List
 
 import torch
@@ -436,7 +437,10 @@ class HiDreamImageTransformer2DModel(
         initial_encoder_hidden_states_seq_len = initial_encoder_hidden_states.shape[1]
         for bid, block in enumerate(self.double_stream_blocks):
             cur_llama31_encoder_hidden_states = encoder_hidden_states[block_id]
-            cur_encoder_hidden_states = torch.cat([initial_encoder_hidden_states, cur_llama31_encoder_hidden_states], dim=1)
+            target_device = hidden_states.device
+            initial_on_target = initial_encoder_hidden_states.to(target_device)
+            llama_on_target = cur_llama31_encoder_hidden_states.to(target_device)
+            cur_encoder_hidden_states = torch.cat([initial_on_target, llama_on_target], dim=1) # Multi GPU FIX 1
             if self.training and self.gradient_checkpointing:
                 def create_custom_forward(module, return_dict=None):
                     def custom_forward(*inputs):
@@ -468,7 +472,9 @@ class HiDreamImageTransformer2DModel(
             block_id += 1
 
         image_tokens_seq_len = hidden_states.shape[1]
-        hidden_states = torch.cat([hidden_states, initial_encoder_hidden_states], dim=1)
+        target_device_mid = hidden_states.device
+        initial_on_target_mid = initial_encoder_hidden_states.to(target_device_mid)
+        hidden_states = torch.cat([hidden_states, initial_on_target_mid], dim=1) # Multi GPU FIX 2
         hidden_states_seq_len = hidden_states.shape[1]
         if image_tokens_masks is not None:
             encoder_attention_mask_ones = torch.ones(
@@ -479,7 +485,9 @@ class HiDreamImageTransformer2DModel(
 
         for bid, block in enumerate(self.single_stream_blocks):
             cur_llama31_encoder_hidden_states = encoder_hidden_states[block_id]
-            hidden_states = torch.cat([hidden_states, cur_llama31_encoder_hidden_states], dim=1)
+            target_device_single = hidden_states.device
+            llama_on_target_single = cur_llama31_encoder_hidden_states.to(target_device_single)
+            hidden_states = torch.cat([hidden_states, llama_on_target_single], dim=1) # Multi GPU FIX 3
             if self.training and self.gradient_checkpointing:
                 def create_custom_forward(module, return_dict=None):
                     def custom_forward(*inputs):
