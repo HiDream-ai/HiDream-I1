@@ -12,16 +12,16 @@ LLAMA_MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 # Model configurations
 MODEL_CONFIGS = {
     "dev": {
-        "path": f"{MODEL_PREFIX}/HiDream-I1-Dev",
+        "path": "/home/ubuntu/.cache/huggingface/hub/models--azaneko--HiDream-I1-Dev-nf4/snapshots/c80f18e2b05a37aff40aa2c5842f025ce08bcb01",
         "guidance_scale": 0.0,
         "num_inference_steps": 28,
         "shift": 6.0,
         "scheduler": FlashFlowMatchEulerDiscreteScheduler
     },
     "full": {
-        "path": f"{MODEL_PREFIX}/HiDream-I1-Full",
+        "path": "azaneko/HiDream-I1-Full-nf4",
         "guidance_scale": 5.0,
-        "num_inference_steps": 50,
+        "num_inference_steps": 28,
         "shift": 3.0,
         "scheduler": FlowUniPCMultistepScheduler
     },
@@ -97,20 +97,11 @@ def parse_resolution(resolution_str):
         return 1024, 1024  # Default fallback
 
 # Generate image function
-def generate_image(model_type, prompt, resolution, seed):
+def generate_image(prompt, resolution, seed):
     global pipe, current_model
     
-    # Reload model if needed
-    if model_type != current_model:
-        del pipe
-        torch.cuda.empty_cache()
-        print(f"Loading {model_type} model...")
-        pipe, config = load_models(model_type)
-        current_model = model_type
-        print(f"{model_type} model loaded successfully!")
-    
     # Get configuration for current model
-    config = MODEL_CONFIGS[model_type]
+    config = MODEL_CONFIGS[current_model]
     guidance_scale = config["guidance_scale"]
     num_inference_steps = config["num_inference_steps"]
     
@@ -136,27 +127,20 @@ def generate_image(model_type, prompt, resolution, seed):
     return images[0], seed
 
 # Initialize with default model
-print("Loading default model (full)...")
-current_model = "full"
+print("Loading default model (dev)...")
+current_model = "dev"
 pipe, _ = load_models(current_model)
 print("Model loaded successfully!")
 
 # Create Gradio interface
-with gr.Blocks(title="HiDream Image Generator") as demo:
+with gr.Blocks(title="HiDream Image Generator (Dev Model 4bit Quantized)") as demo:
     gr.Markdown("# HiDream Image Generator")
     
     with gr.Row():
         with gr.Column():
-            model_type = gr.Radio(
-                choices=list(MODEL_CONFIGS.keys()),
-                value="full",
-                label="Model Type",
-                info="Select model variant"
-            )
-            
             prompt = gr.Textbox(
                 label="Prompt", 
-                placeholder="A cat holding a sign that says \"Hi-Dreams.ai\".", 
+                value="A sports team logo with dynamic mascot and team colors in a modern, sleek design with name 'BeaverDreams' and slogan 'Dream Big, Beaver!",
                 lines=3
             )
             
@@ -181,10 +165,10 @@ with gr.Blocks(title="HiDream Image Generator") as demo:
     
     generate_btn.click(
         fn=generate_image,
-        inputs=[model_type, prompt, resolution, seed],
+        inputs=[prompt, resolution, seed],
         outputs=[output_image, seed_used]
     )
 
 # Launch app
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(server_name="0.0.0.0", server_port=7860)

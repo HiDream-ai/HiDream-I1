@@ -15,7 +15,7 @@ LLAMA_MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 # Model configurations
 MODEL_CONFIGS = {
     "dev": {
-        "path": f"{MODEL_PREFIX}/HiDream-I1-Dev",
+        "path": f"azaneko/HiDream-I1-Dev-nf4",
         "guidance_scale": 0.0,
         "num_inference_steps": 28,
         "shift": 6.0,
@@ -131,7 +131,7 @@ def generate_image(pipe, model_type, prompt, resolution, seed):
 print("Loading default model (full)...")
 pipe, _ = load_models(model_type)
 print("Model loaded successfully!")
-prompt = "A cat holding a sign that says \"Hi-Dreams.ai\"." 
+prompt = "A car dealership logo with automotive elements and bold red colors" 
 resolution = "1024 × 1024 (Square)"
 seed = -1
 image, seed = generate_image(pipe, model_type, prompt, resolution, seed)
