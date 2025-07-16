@@ -601,13 +601,18 @@ class HiDreamImagePipeline(DiffusionPipeline, FromSingleFileMixin):
 
         # 4. Prepare latent variables
         num_channels_latents = self.transformer.config.in_channels
+
+        target_device_for_latents = device # Default fallback
+        if generator is not None and isinstance(generator, torch.Generator):
+             target_device_for_latents = generator.device
+            
         latents = self.prepare_latents(
             batch_size * num_images_per_prompt,
             num_channels_latents,
             height,
             width,
             pooled_prompt_embeds.dtype,
-            device,
+            target_device_for_latents,
             generator,
             latents,
         )
