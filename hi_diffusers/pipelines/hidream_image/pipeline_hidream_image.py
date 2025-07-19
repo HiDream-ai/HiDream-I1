@@ -629,6 +629,9 @@ class HiDreamImagePipeline(DiffusionPipeline, FromSingleFileMixin):
             if self.do_classifier_free_guidance:
                 img_sizes = img_sizes.repeat(2 * B, 1)
                 img_ids = img_ids.repeat(2 * B, 1, 1)
+            else:
+                img_sizes = img_sizes.repeat(B, 1)
+                img_ids = img_ids.repeat(B, 1, 1)
         else:
             img_sizes = img_ids = None
 
