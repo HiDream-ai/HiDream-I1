@@ -15,7 +15,7 @@ from transformers import (
 from diffusers.image_processor import VaeImageProcessor
 from diffusers.loaders import FromSingleFileMixin
 from diffusers.models.autoencoders import AutoencoderKL
-from diffusers.schedulers import FlowMatchEulerDiscreteScheduler
+from diffusers.schedulers import FlowMatchEulerDiscreteScheduler, UniPCMultistepScheduler
 from diffusers.utils import (
     USE_PEFT_BACKEND,
     is_torch_xla_available,
@@ -637,6 +637,9 @@ class HiDreamImagePipeline(DiffusionPipeline, FromSingleFileMixin):
         scheduler_kwargs = {"mu": mu}
         if isinstance(self.scheduler, FlowUniPCMultistepScheduler):
             self.scheduler.set_timesteps(num_inference_steps, device=device, shift=math.exp(mu))
+            timesteps = self.scheduler.timesteps
+        elif isinstance(self.scheduler, UniPCMultistepScheduler):
+            self.scheduler.set_timesteps(num_inference_steps, device=device)  # , shift=math.exp(mu))
             timesteps = self.scheduler.timesteps
         else:
             timesteps, num_inference_steps = retrieve_timesteps(
